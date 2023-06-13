@@ -1,3 +1,5 @@
+import throttle from 'lodash.throttle';
+
 const formEl = document.querySelector('form');
 const submitBtnEl = document.querySelector('button');
 const tempFormData = JSON.parse(localStorage.getItem('feedback-form-state'));
