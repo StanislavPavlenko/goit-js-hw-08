@@ -1,59 +1,43 @@
 import throttle from 'lodash.throttle';
 
-const formElement = document.querySelector('form');
-const btnEl = document.querySelector('button');
-const tempFormData = JSON.parse(localStorage.getItem('feedback-form-state'));
+const formEl = document.querySelector('.feedback-form');
+const emailInput = formEl.querySelector('input[name="email"]');
+const messageInput = formEl.querySelector('textarea[name="message"]');
 
-formElement.addEventListener('input', throttle(onInput, 500));
-formElement.addEventListener('submit', onSubmit);
+const STORAGE_KEY = 'feedback-form-state';
 
-if (tempFormData) {
-  if (!tempFormData.email) {
-    formElement[0].value = '';
-  } else {
-    formElement[0].value = tempFormData.email;
-  }
+const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-  if (!tempFormData.message) {
-    formElement[1].value = '';
-  } else {
-    formElement[1].value = tempFormData.message;
-  }
+if (savedData) {
+  emailInput.value = savedData.email;
+  messageInput.value = savedData.message;
 }
 
-function onInput(e) {
+const saveFormData = () => {
+  const data = {
+    email: emailInput.value,
+    message: messageInput.value,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+};
+
+const throttledSaveFormData = throttle(saveFormData, 500);
+
+emailInput.addEventListener('input', throttledSaveFormData);
+messageInput.addEventListener('input', throttledSaveFormData);
+function onClickSubmit(e) {
   e.preventDefault();
 
-  let formData = {};
+  const formData = {
+    email: emailInput.value,
+    message: messageInput.value,
+  };
+  console.log(formData);
 
-  if (localStorage.getItem('feedback-form-state') === null) {
-    localStorage.setItem('feedback-form-state', JSON.stringify(formData));
-    return;
-  }
-    formData.email= formElement[0].value
-    formData.message = formElement[1].value;
- 
+  localStorage.removeItem(STORAGE_KEY);
 
-  localStorage.setItem('feedback-form-state', JSON.stringify(formData));
-
-  formData.email = JSON.parse(localStorage.getItem('feedback-form-state')).email;
-  formData.message = JSON.parse(localStorage.getItem('feedback-form-state')).message;
-
+  emailInput.value = '';
+  messageInput.value = '';
 }
 
-function onSubmit(e) {
-  e.preventDefault();
-
-  console.log(JSON.parse(localStorage.getItem('feedback-form-state')));
-
-  localStorage.removeItem('feedback-form-state');
-  formElement[0].value = '';
-  formElement[1].value = '';
-}
-
-window.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    btnEl.click();
-  }
-});
+formEl.addEventListener('submit', onClickSubmit);
